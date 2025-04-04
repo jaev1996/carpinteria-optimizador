@@ -7,11 +7,11 @@ interface ResultsVisualizationProps {
 
 export default function ResultsVisualization({ results }: ResultsVisualizationProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [scale, setScale] = useState<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState<number>(1);
 
   useEffect(() => {
-    if (!results || !canvasRef.current || !containerRef.current) return;
+    if (!results || results.length === 0 || !canvasRef.current || !containerRef.current) return;
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -26,10 +26,10 @@ export default function ResultsVisualization({ results }: ResultsVisualizationPr
     const maxSheetHeight = Math.max(...results.map(r => r.material.height));
     
     // Ajustar escala basada en el contenedor
-    const containerWidth = containerRef.current.clientWidth - 40; // 20px de padding a cada lado
+    const containerWidth = containerRef.current.clientWidth;
     const calculatedScale = Math.min(
-      containerWidth / maxSheetWidth,
-      1.5 // Escala máxima para que no se vea pixelado
+      (containerWidth - 40) / maxSheetWidth, // 20px padding a cada lado
+      2.5 // Escala máxima aumentada para mejor visibilidad
     );
     setScale(calculatedScale);
 
@@ -51,13 +51,13 @@ export default function ResultsVisualization({ results }: ResultsVisualizationPr
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Colores para las piezas
+    // Colores para las piezas (paleta más contrastada)
     const colors = [
-      "rgba(102, 126, 234, 0.7)",  // Azul
-      "rgba(237, 100, 166, 0.7)", // Rosado
-      "rgba(165, 217, 152, 0.7)", // Verde
-      "rgba(255, 203, 107, 0.7)", // Amarillo
-      "rgba(170, 130, 255, 0.7)", // Morado
+      "rgba(70, 130, 180, 0.7)",   // Azul acero
+      "rgba(220, 60, 60, 0.7)",    // Rojo
+      "rgba(60, 179, 113, 0.7)",   // Verde medio
+      "rgba(238, 210, 2, 0.7)",    // Amarillo oro
+      "rgba(147, 112, 219, 0.7)",  // Morado medio
     ];
 
     // Dibujar cada hoja
@@ -67,67 +67,80 @@ export default function ResultsVisualization({ results }: ResultsVisualizationPr
       const sheetHeight = result.material.height * calculatedScale;
       const centerX = (canvas.width - sheetWidth) / 2;
 
+      // Título de la hoja (más grande y destacado)
       // Título de la hoja
+      ctx.textAlign = "center"; // Asegurar centrado horizontal
+      ctx.textBaseline = "middle"; // Centrado vertical
       ctx.fillStyle = "#111827";
-      ctx.font = "bold 14px Arial";
+      ctx.font = "bold 16px Arial";
       ctx.fillText(
-        `Hoja ${index + 1} (${result.material.width}cm × ${result.material.height}cm) - Aprovechamiento: ${result.efficiency}%`,
+        `Hoja ${index + 1} (${result.material.width}cm × ${result.material.height}cm) - ${result.efficiency}% aprovechamiento`,
         canvas.width / 2,
         currentY + titleHeight / 2
       );
       
       currentY += titleHeight;
 
-      // Dibujar hoja de material
-      ctx.strokeStyle = "#374151";
-      ctx.lineWidth = 2;
+      // Dibujar hoja de material (borde más grueso)
+      ctx.strokeStyle = "#2c3e50";
+      ctx.lineWidth = 3;
       ctx.strokeRect(centerX, currentY, sheetWidth, sheetHeight);
       ctx.fillStyle = "#f8fafc";
       ctx.fillRect(centerX, currentY, sheetWidth, sheetHeight);
       
-      // Dibujar cortes
+      // Dibujar cortes con mayor contraste
       result.cuts.forEach((cut, cutIndex) => {
         const x = centerX + cut.x * calculatedScale;
         const y = currentY + cut.y * calculatedScale;
         const width = cut.width * calculatedScale;
         const height = cut.height * calculatedScale;
         
-        // Rectángulo del corte
-        ctx.fillStyle = colors[cutIndex % colors.length];
+        // Rectángulo del corte (más opaco para mejor visibilidad)
+        ctx.fillStyle = colors[cutIndex % colors.length].replace('0.7', '0.8');
         ctx.fillRect(x, y, width, height);
-        ctx.strokeStyle = "#1e293b";
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#1a237e";
+        ctx.lineWidth = 1.5;
         ctx.strokeRect(x, y, width, height);
         
-        // Medidas dentro de la pieza
+        // Medidas dentro de la pieza (texto más grande y legible)
         ctx.fillStyle = "#000000";
-        
-        // Tamaño de fuente adaptable
-        const fontSize = Math.min(width * 0.15, height * 0.2, 14);
+        const fontSize = Math.min(width * 0.18, height * 0.25, 18); // Texto más grande
         ctx.font = `bold ${fontSize}px Arial`;
         
         // Texto horizontal (ancho)
-        if (width > 30 && height > 20) {
-          ctx.save();
-          ctx.translate(x + width / 2, y + height / 2);
-          
-          // Medida del ancho
-          ctx.fillText(`${cut.width}cm`, 0, -height * 0.25);
-          
-          // Medida del alto (rotada)
-          ctx.rotate(Math.PI / 2);
-          ctx.fillText(`${cut.height}cm`, 0, -width * 0.25);
-          
-          ctx.restore();
-        }
+        ctx.save();
+        ctx.translate(x + width / 2, y + height / 2);
+        ctx.fillText(`${cut.width}cm`, 0, -height * 0.2);
+        
+        // Texto vertical (alto)
+        ctx.rotate(Math.PI / 2);
+        ctx.fillText(`${cut.height}cm`, 0, -width * 0.2);
+        ctx.restore();
+      });
 
-        // Indicador de rotación
-        if (cut.rotated) {
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "bold 10px Arial";
-          ctx.fillText("↻", x + 8, y + 8);
+      // Dibujar sobrantes con estilo más claro
+      ctx.setLineDash([5, 3]);
+      ctx.strokeStyle = "#7f8c8d";
+      ctx.lineWidth = 1;
+      
+      result.wastePieces?.forEach(waste => {
+        const x = centerX + waste.x * calculatedScale;
+        const y = currentY + waste.y * calculatedScale;
+        const width = waste.width * calculatedScale;
+        const height = waste.height * calculatedScale;
+        
+        ctx.strokeRect(x, y, width, height);
+        
+        // Etiqueta para sobrantes (solo si hay espacio suficiente)
+        if (width > 50 && height > 30) {
+          ctx.fillStyle = "#555";
+          ctx.setLineDash([]);
+          const fontSize = Math.min(width * 0.1, height * 0.15, 14);
+          ctx.font = `bold ${fontSize}px Arial`;
+          ctx.fillText("Sobrante", x + width / 2, y + height / 2);
         }
       });
+      ctx.setLineDash([]);
 
       currentY += sheetHeight + sheetSpacing;
     });
@@ -135,41 +148,16 @@ export default function ResultsVisualization({ results }: ResultsVisualizationPr
 
   return (
     <div className="mt-6" ref={containerRef}>
-      <h2 className="text-xl font-semibold mb-4">Diagrama de Cortes Optimizados</h2>
-      <div className="overflow-auto max-h-[70vh] border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+      <h2 className="text-xl font-semibold mb-4">Diagramas de Corte Optimizados</h2>
+      <div className="overflow-auto max-h-[80vh] border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
         <canvas 
           ref={canvasRef} 
-          className="bg-white"
+          className="bg-white block"
           style={{ 
-            width: "100%", 
-            height: "auto",
-            minHeight: "300px" 
+            width: "100%",
+            minHeight: "300px"
           }}
         />
-      </div>
-      
-      <div className="mt-4 flex justify-between items-center">
-        <div className="text-sm text-gray-600">
-          {results.length > 0 && (
-            <span>Escala aproximada: 1:{Math.round(100/scale)}</span>
-          )}
-        </div>
-        <div className="flex space-x-2">
-          <button 
-            onClick={() => setScale(prev => Math.min(prev + 0.1, 2))}
-            className="px-3 py-1 bg-gray-200 rounded text-sm"
-            disabled={scale >= 2}
-          >
-            +
-          </button>
-          <button 
-            onClick={() => setScale(prev => Math.max(prev - 0.1, 0.5))}
-            className="px-3 py-1 bg-gray-200 rounded text-sm"
-            disabled={scale <= 0.5}
-          >
-            -
-          </button>
-        </div>
       </div>
     </div>
   );

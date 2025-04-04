@@ -22,8 +22,10 @@ export interface MaterialPiece {
   export interface CutResult {
     sheetNumber: number;
     cuts: PlacedCut[];
+    wastePieces: PlacedCut[]; // Piezas sobrantes
     usedArea: number;
     wasteArea: number;
     efficiency: number;
     material: MaterialPiece;
+    remainingPieces?: RequiredCut[];
   }

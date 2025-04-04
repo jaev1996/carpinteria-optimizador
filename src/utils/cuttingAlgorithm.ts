@@ -76,6 +76,7 @@ function processSheetWithGuillotine(
   const placedCuts: PlacedCut[] = [];
   const freeRects = [{ x: 0, y: 0, width: sheetWidth, height: sheetHeight }];
   const remainingPieces: RequiredCut[] = [];
+  const wastePieces: PlacedCut[] = []; // Nuevo: almacenar restos de material
 
   for (const piece of pieces) {
     let bestRectIndex = -1;
@@ -182,6 +183,10 @@ function processSheetWithGuillotine(
     mergeFreeRects(freeRects);
   }
 
+  wastePieces.push(...freeRects.filter(rect => 
+    rect.width >= 10 && rect.height >= 10 // Solo mostrar restos significativos
+  ));
+
   // Calcular métricas
   const usedArea = placedCuts.reduce((sum, cut) => sum + cut.width * cut.height, 0);
   const totalArea = sheetWidth * sheetHeight;
@@ -191,6 +196,7 @@ function processSheetWithGuillotine(
   return {
     sheetNumber,
     cuts: placedCuts,
+    wastePieces, // Añadimos los restos al resultado
     usedArea,
     wasteArea,
     efficiency: parseFloat(efficiency.toFixed(2)),

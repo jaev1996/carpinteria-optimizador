@@ -44,7 +44,7 @@ export default function App() {
             <h2 className="text-xl font-semibold mb-4">Datos de Entrada</h2>
             <InputForm 
               onSubmit={handleCalculate} 
-              initialMaterial={{ width: 150, height: 300, quantity: 1 }}
+              initialMaterial={{ width: 250, height: 160, quantity: 1 }}
             />
           </div>
 

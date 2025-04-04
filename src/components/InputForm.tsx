@@ -32,8 +32,8 @@ export default function InputForm({ onSubmit, initialMaterial }: InputFormProps)
   const { register, handleSubmit, control, watch } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      materialWidth: initialMaterial?.width || 150,
-      materialHeight: initialMaterial?.height || 300,
+      materialWidth: initialMaterial?.width || 240,
+      materialHeight: initialMaterial?.height || 160,
       materialQuantity: initialMaterial?.quantity || 1,
       allowRotation: true,
       cuts: [{ width: 50, height: 50, quantity: 5, canRotate: true }],
@@ -73,7 +73,7 @@ export default function InputForm({ onSubmit, initialMaterial }: InputFormProps)
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Ancho del Lienzo (cm)
+            Largo del Lienzo (cm)
           </label>
           <input
             type="number"
@@ -84,7 +84,7 @@ export default function InputForm({ onSubmit, initialMaterial }: InputFormProps)
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Alto del Lienzo (cm)
+            Ancho del Lienzo (cm)
           </label>
           <input
             type="number"
@@ -122,7 +122,7 @@ export default function InputForm({ onSubmit, initialMaterial }: InputFormProps)
           <h3 className="text-lg font-medium">Piezas Requeridas</h3>
           <button
             type="button"
-            onClick={() => append({ width: 30, height: 30, quantity: 1, canRotate: true })}
+            onClick={() => append({ width: 50, height: 50, quantity: 1, canRotate: true })}
             className="flex items-center text-sm text-blue-600 hover:text-blue-800"
           >
             <FiPlus className="mr-1" /> Agregar Pieza
@@ -133,7 +133,7 @@ export default function InputForm({ onSubmit, initialMaterial }: InputFormProps)
           {fields.map((field, index) => (
             <div key={field.id} className="grid grid-cols-5 gap-4 items-end bg-gray-50 p-3 rounded">
               <div>
-                <label className="block text-xs text-gray-700">Ancho (cm)</label>
+                <label className="block text-xs text-gray-700">Largo (cm)</label>
                 <input
                   type="number"
                   step="0.1"
@@ -142,7 +142,7 @@ export default function InputForm({ onSubmit, initialMaterial }: InputFormProps)
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-700">Alto (cm)</label>
+                <label className="block text-xs text-gray-700">Ancho (cm)</label>
                 <input
                   type="number"
                   step="0.1"
