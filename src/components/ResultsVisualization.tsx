@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { CutResult } from "../utils/types";
 
 interface ResultsVisualizationProps {
@@ -8,7 +8,6 @@ interface ResultsVisualizationProps {
 export default function ResultsVisualization({ results }: ResultsVisualizationProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState<number>(1);
 
   useEffect(() => {
     if (!results || results.length === 0 || !canvasRef.current || !containerRef.current) return;
@@ -23,7 +22,6 @@ export default function ResultsVisualization({ results }: ResultsVisualizationPr
 
     // Calcular dimensiones máximas para escalado
     const maxSheetWidth = Math.max(...results.map(r => r.material.width));
-    const maxSheetHeight = Math.max(...results.map(r => r.material.height));
     
     // Ajustar escala basada en el contenedor
     const containerWidth = containerRef.current.clientWidth;
@@ -31,7 +29,6 @@ export default function ResultsVisualization({ results }: ResultsVisualizationPr
       (containerWidth - 40) / maxSheetWidth, // 20px padding a cada lado
       2.5 // Escala máxima aumentada para mejor visibilidad
     );
-    setScale(calculatedScale);
 
     // Espaciado entre hojas
     const sheetSpacing = 40;
