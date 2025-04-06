@@ -38,7 +38,7 @@ export default function ReportGenerator({ results }: ReportGeneratorProps) {
       pdf.addImage(dataUrl, 'PNG', margin, diagramY, imgWidth, diagramHeight);
     }
 
-    pdf.save(`Plan_de_Corte_Horizontal.pdf`);
+    pdf.save(`Plan_de_Corte.pdf`);
   };
 
   return (
